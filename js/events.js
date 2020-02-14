@@ -12,21 +12,35 @@ async function loadStandard() {
     genCodeSQL += genSQLFromCodeId(getCodeId(initialData.csvDataOfPropertise, "property"));
     genCodeSQL += "SELECT * FROM code;"
     editor.getDoc().setValue(createCode + base + genCodeSQL);
-    execute(editor.getValue());
+
+    worker.onmessage = function(event) {
+        if (event.data.id === 8201) {
+            let results = event.data.results;
+            console.log(event);
+            if (!results) {
+                error({ message: event.data.error });
+                return;
+            }
+        }
+    };
+    worker.postMessage({ id: 8201, action: 'exec', sql: editor.getValue() });
+    // execute(editor.getValue());
     // editor.getDoc().setValue(genCodeSQL);
     // execute(editor.getValue());
 }
 
 function generateSQL() {
-    execute(editor.getValue());
-    worker.postMessage({ action: 'exec', sql: joiningSQL });
     worker.onmessage = function(event) {
-        let results = event.data.results;
-        if (!results) {
-            error({ message: event.data.error });
-            return;
+        if (event.data.id === 8202) {
+            let results = event.data.results;
+            console.log(1);
+            if (!results) {
+                error({ message: event.data.error });
+                return;
+            }
+            let res = generate_SQL_Statement(results, "2020-11-20", "2021-11-20");
+            // editor.getDoc().setValue(createTree + res.join("") + "\nSELECT * FROM tree;");
         }
-        let res = generate_SQL_Statement(results, "2020-11-20", "2020-11-22");
-        editor.getDoc().setValue(createTree + res.join("") + "\nSELECT * FROM tree;");
-    }
+    };
+    worker.postMessage({ id: 8202, action: 'exec', sql: joiningSQL });
 }

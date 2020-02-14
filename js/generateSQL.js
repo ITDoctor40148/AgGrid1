@@ -9,17 +9,17 @@ function getCommonCodeSQL(code_type, channel_num, value_string) {
 
 function getChannelCode(channel_num, value_string) {
     return getCommonCodeSQL("channel", channel_num, value_string);
-    
+
 }
 
 function getProductCode(channel_num, value_string) {
     return getCommonCodeSQL("attribute", channel_num, value_string);
-    
+
 }
 
 function getPropertyCode(channel_num, value_string) {
     return getCommonCodeSQL("property", channel_num, value_string);
-    
+
 }
 
 function getCodeId(data, prefix) {
@@ -56,11 +56,11 @@ function genSQLFromCodeId(data) {
     Object.keys(data).map((key, id) => {
         let sql = "";
         if (key.includes("property")) {
-            if(key !== "property1"){
+            if (key !== "property1") {
                 sql = cmmn + "'property1'" + ", '" + data[key] + "', " + id + ");\n";
                 sqls.push(sql);
             }
-            
+
         } else {
             data[key].map((items, ids) => {
                 sql = cmmn + "'" + key + "'" + ",";
@@ -83,12 +83,12 @@ function genSQLForBaseData() {
     let commonPropertyData = "INSERT INTO property VALUES (";
     let commonProductData = "INSERT INTO product VALUES (";
     initialData.csvDataOfChannel.map((item, id) => {
-        if(id !== 0) 
+        if (id !== 0)
             insertChannelData.push(commonChannelData + "'" + item[0] + "', " + "'" + item[1] + "', " + "'" + item[2] + "');\n");
     });
     initialData.csvDataOfProduct.map((item, id) => {
         let tmp = "";
-        if(id !== 0){
+        if (id !== 0) {
             for (let i = 0; i < 9; i++)
                 tmp += "'" + item[i] + "', ";
             insertProductData.push(commonProductData + tmp + "'" + item[9] + "');\n");
@@ -96,7 +96,7 @@ function genSQLForBaseData() {
     })
     initialData.csvDataOfPropertise.map((item, id) => {
         let tmp = "";
-        if(id !== 0){
+        if (id !== 0) {
             for (let i = 0; i < 3; i++)
                 tmp += "'" + item[i] + "', ";
             insertPropertyData.push(commonPropertyData + tmp + "'" + item[3] + "');\n");
@@ -107,33 +107,61 @@ function genSQLForBaseData() {
 }
 
 function generate_SQL_Statement(codes, start_date, end_date) {
+    worker.postMessage({ id: 8203, action: 'exec', sql: createTree });
+    tic();
     let today = getTodayDate();
-    let start_date_tmp = start_date.split("-");
-    let end_date_tmp = end_date.split("-");
-    let res = [];
-    for(let i = new Date(start_date); i <= new Date(end_date); i.setDate(i.getDate() + 1)){
+    // let start_date_tmp = start_date.split("-");
+    // let end_date_tmp = end_date.split("-");
+    let res = "";
+    let cc = 1;
+    let sql = "";
+    let r = "";
+    let empty;
+    for (let i = new Date(start_date); i <= new Date(end_date); i.setDate(i.getDate() + 1)) {
         let isoDate = convertDate2ISOFormat(i);
         let tmp = isoDate.year + "-" + isoDate.month + "-" + isoDate.day;
         codes[0].values.map((stmt, id) => {
             let each = stmt + " , " + tmp + " , " + today + ", 0, 0, 1, 0";
-            let sql = "";
+            sql = "";
             sql = "INSERT INTO tree (" + codes[0].columns.toString() + ", value_date, date_created, account, model, hierarchy, active, user, tag, change, value" + ") VALUES (";
             stmt.map((field, id) => {
-                let r = "";
-                let empty = field;
-                if(id === 0) {
+                empty = field;
+                if (id === 0) {
                     r = "(" + getPropertyCode(id + 1, field) + "),";
                 } else if (id < 4) {
                     r = "(" + getChannelCode(id, field) + "),";
                 } else {
                     r = "(" + getProductCode(id - 3, field) + "),";
                 }
-                if(empty === 'undefined') r = -2 + ",";
+                if (empty === 'undefined') r = -2 + ",";
                 sql += r;
-            })
-            sql += "'" + tmp + "', '" + today + "', " + "0, 0, 1, 0, 2, 2, 2, 2" + Math.floor(Math.random() * 100) + ");\n";
-            res.push(sql);
-        })
+            });
+            sql += "'" + tmp + "', '" + today + "', " + "0, 0, 1, 0, 2, 2, 2, 2";
+            sql += Math.floor(Math.random() * 100);
+            sql += ");";
+            worker.onmessage = function(event) {
+                if (event.data.id === 8204) {
+                    console.log(cc);
+                    let results = event.data.results;
+                    if (!results) {
+                        error({ message: event.data.error });
+                        return;
+                    }
+                }
+            };
+            cc++;
+            res += sql;
+            if (cc >= 3000) {
+                console.log("SS:" + cc);
+                worker.postMessage({ id: 8204, action: 'exec', sql: "BEGIN TRANSACTION;" + res + "COMMIT;" });
+                cc = 1;
+                res = "";
+            }
+            // res.push(sql);
+        });
+        // run redundant sql
     }
-    return res;
+    worker.postMessage({ id: 8204, action: 'exec', sql: "BEGIN TRANSACTION;" + res + "COMMIT;" });
+    toc("INSERT");
+    // return res;
 }

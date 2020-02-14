@@ -7,7 +7,6 @@ async function loadInitData() {
     await $.get(file_channel, function(data) {
         initialData["csvDataOfChannel"] = Papa.parse(data).data;
         removeEmptyLineData(initialData.csvDataOfChannel);
-        console.log(initialData.csvDataOfChannel);
     });
     await $.get(file_product, function(data) {
         initialData["csvDataOfProduct"] = Papa.parse(data).data;
