@@ -1,3 +1,20 @@
 ﻿Property Name,Formula,Aggregate Function,Split Method
-Price,,AVG,"COPY,FACTOR"
-Actual,,SUM,"DIVIDE,FACTOR"
+Sales Forecast,,SUM,"DIVIDE,FACTOR"
+Sales Actual,,SUM,READ-ONLY
+Final Price,,AVG,"COPY,FACTOR"
+Original Price,,AVG,"COPY,FACTOR"
+Manufacturing Cost,,AVG,"COPY,FACTOR"
+Shipping Cost,,AVG,"COPY,FACTOR"
+Marketing Cost,,AVG,"COPY,FACTOR"
+Profit Per Unit,[Final Price] - [Manufacturing Cost] - [Shipping Cost] - [Marketing Cost],AVG,READ-ONLY
+Inventory Forecast,,SUM,"DIVIDE,FACTOR"
+Inventory Actual,,SUM,READ-ONLY
+Is On Promo (1 or 0),,AVG,COPY
+Actual Revenue,[Sales Actual] * [Final Price],SUM,READ-ONLY
+Projected Revenue,[Sales Forecast] * [Final Price],SUM,READ-ONLY
+Actual Profit,[Sales Actual] * [Profit Per Unit],SUM,READ-ONLY
+Projected Profit,[Sales Forecast] * [Profit Per Unit],SUM,READ-ONLY
+Forecast Error,[Sales Forecast] - [Sales Actual],SUM,READ-ONLY
+Absolute Forecast Error,abs([Sales Actual] - [Sales Forecast]),SUM,READ-ONLY
+Percentage Error,([Sales Actual]>0) ? ([Sales Forecast] - [Sales Actual])/[Sales Actual] : 0,AVG,READ-ONLY
+Absolute Percentage Error,([Sales Actual]>0) ? abs([Sales Forecast] - [Sales Actual])/[Sales Actual] : 0,AVG,READ-ONLY

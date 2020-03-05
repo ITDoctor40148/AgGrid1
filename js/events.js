@@ -16,7 +16,6 @@ async function loadStandard() {
     worker.onmessage = function(event) {
         if (event.data.id === 8201) {
             let results = event.data.results;
-            console.log(event);
             if (!results) {
                 error({ message: event.data.error });
                 return;
@@ -30,17 +29,20 @@ async function loadStandard() {
 }
 
 function generateSQL() {
+    let res;
     worker.onmessage = function(event) {
         if (event.data.id === 8202) {
             let results = event.data.results;
-            console.log(1);
             if (!results) {
                 error({ message: event.data.error });
                 return;
             }
-            let res = generate_SQL_Statement(results, "2020-11-20", "2021-11-20");
-            // editor.getDoc().setValue(createTree + res.join("") + "\nSELECT * FROM tree;");
+            res = generate_SQL_Statement(results, "2020-02-01", "2020-02-02");
+            // editor.getDoc().setValue(createTree + res + "\nSELECT * FROM tree;");
         }
     };
     worker.postMessage({ id: 8202, action: 'exec', sql: joiningSQL });
+    setTimeout(function() {
+        console.log(res);
+    }, 10000);
 }

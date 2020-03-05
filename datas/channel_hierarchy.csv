@@ -1,9 +1,13 @@
 ﻿Retailer,Order Type
-Walmart,Online
-Costco,Online
-Tesco,Online
-Aldi,Online
-Walmart,In-store
-Costco,In-store
-Tesco,In-store
-Aldi,In-store
+Amazon.com,Online
+Recharge Electronics,Online
+T-Mobile,Online
+BrandsMart,Online
+Verizon,Online
+AT&T,Online
+Apple Store,In-Store
+Recharge Electronics,In-Store
+T-Mobile,In-Store
+Verizon,In-Store
+BrandsMart,In-Store
+AT&T,In-Store
